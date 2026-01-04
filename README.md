@@ -3,11 +3,14 @@
 > 🚀 **A Dockerized web dashboard for [TradingAgents](https://github.com/TauricResearch/TradingAgents).**  
 > Features improved UI/UX, real-time logging, and easy deployment with Docker.
 
+<details>
+<summary>📸 <strong>Click to view Dashboard Screenshot</strong></summary>
 <p align="center">
   <img src="assets/dashboard_sample.png" alt="Dashboard Screenshot" width="100%">
   <br>
   <em>Real-time analysis and logging in the web dashboard</em>
 </p>
+</details>
 
 ## ✨ Key Features
 - **Dockerized Setup:** One-command deployment using Docker Compose.
