@@ -17,6 +17,7 @@
 - **Web Dashboard:** Interactive UI built with Streamlit for easy ticker/date selection.
 - **Real-time Logging:** View internal agent thoughts and debates directly in the browser.
 - **Persistent Logs:** Analysis logs are automatically saved to `logs/YYYY-MM-DD/TICKER/`.
+- **Auto-Summary:** Generates and saves a structured AI summary report (`_summary.md`) alongside the logs.
 
 ## 🐳 Quick Start
 
