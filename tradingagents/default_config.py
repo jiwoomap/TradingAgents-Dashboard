@@ -1,5 +1,12 @@
 import os
 
+# Check for API keys
+has_alpha_vantage = bool(os.getenv("ALPHA_VANTAGE_API_KEY"))
+
+# Determine default vendors based on available keys
+default_fundamental_vendor = "alpha_vantage" if has_alpha_vantage else "yfinance"
+default_news_vendor = "alpha_vantage" if has_alpha_vantage else "google"
+
 DEFAULT_CONFIG = {
     "project_dir": os.path.abspath(os.path.join(os.path.dirname(__file__), ".")),
     "results_dir": os.getenv("TRADINGAGENTS_RESULTS_DIR", "./results"),
@@ -22,8 +29,8 @@ DEFAULT_CONFIG = {
     "data_vendors": {
         "core_stock_apis": "yfinance",       # Options: yfinance, alpha_vantage, local
         "technical_indicators": "yfinance",  # Options: yfinance, alpha_vantage, local
-        "fundamental_data": "alpha_vantage", # Options: openai, alpha_vantage, local
-        "news_data": "alpha_vantage",        # Options: openai, alpha_vantage, google, local
+        "fundamental_data": default_fundamental_vendor, # Options: openai, alpha_vantage, local, yfinance
+        "news_data": default_news_vendor,        # Options: openai, alpha_vantage, google, local
     },
     # Tool-level configuration (takes precedence over category-level)
     "tool_vendors": {
