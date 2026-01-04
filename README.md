@@ -23,7 +23,8 @@
 
 ### Prerequisites
 - Docker & Docker Compose
-- OpenAI API Key & Alpha Vantage API Key
+- OpenAI API Key
+- Alpha Vantage API Key (Optional, but recommended for detailed data)
 
 ### Installation & Run
 1. **Clone the repository:**
@@ -36,8 +37,8 @@
    ```bash
    cp .env.example .env
    # Edit .env and add your API keys:
-   # OPENAI_API_KEY=sk-...
-   # ALPHA_VANTAGE_API_KEY=...
+   # OPENAI_API_KEY=sk-... (Required)
+   # ALPHA_VANTAGE_API_KEY=... (Optional - Defaults to yfinance/Google if missing)
    ```
 
 3. **Run with Docker:**
