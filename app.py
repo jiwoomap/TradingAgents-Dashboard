@@ -208,7 +208,7 @@ if run_btn:
             ta = TradingAgentsGraph(debug=True, config=config)
             
             # Run Propagation
-            final_state, decision = ta.propagate(ticker, target_date.strftime("%Y-%m-%d"))
+            _, decision = ta.propagate(ticker, target_date.strftime("%Y-%m-%d"))
             
             status_placeholder.success("✅ Analysis Complete!")
             
@@ -231,32 +231,12 @@ if run_btn:
             
             st.info(f"### Decision: {final_decision}")
             
-            # 2. Debate Transcript
+            # 2. Debate Transcript (New Section)
             st.subheader("💬 Analyst Debate Transcript")
             with st.container(height=500):
                 st.markdown(capture.get_debate_transcript())
 
-            # 3. Verified Sources (Fact Checker Results)
-            if final_state and "investment_debate_state" in final_state and "verified_urls" in final_state["investment_debate_state"]:
-                verified_urls = final_state["investment_debate_state"]["verified_urls"]
-                if verified_urls:
-                    st.subheader("✅ Verified Sources & Fact Check")
-                    st.caption("URLs verified by Fact Checker via direct connection test.")
-                    
-                    # Transform list of dicts to a clean format for display
-                    # verified_urls is [{'url':..., 'status':..., 'source':...}]
-                    st.dataframe(
-                        verified_urls, 
-                        column_config={
-                            "url": st.column_config.LinkColumn("Source URL"),
-                            "status": "Verification Status",
-                            "source": "Source Agent"
-                        },
-                        use_container_width=True,
-                        hide_index=True
-                    )
-
-            # 4. Generate and Display AI Summary
+            # 3. Generate and Display AI Summary
             st.subheader("📝 AI Analysis Summary")
             with st.spinner("✍️ Writing final report based on agent debates..."):
                 logs = capture.get_logs()
