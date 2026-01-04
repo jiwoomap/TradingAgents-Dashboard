@@ -24,6 +24,10 @@ def create_bear_researcher(llm, memory):
 
         prompt = f"""You are a Bear Analyst making the case against investing in the stock. Your goal is to present a well-reasoned argument emphasizing risks, challenges, and negative indicators. Leverage the provided research and data to highlight potential downsides and counter bullish arguments effectively.
 
+CRITICAL INSTRUCTION: You must CITE your sources. Whenever you mention a fact, number, or news event, explicitly state where it came from using the provided reports.
+Format: "Net income dropped 5% (Source: Fundamentals Report)" or "CEO resigned (Source: News Report, [Date])".
+DO NOT hallucinate information not present in the provided reports.
+
 Key points to focus on:
 
 - Risks and Challenges: Highlight factors like market saturation, financial instability, or macroeconomic threats that could hinder the stock's performance.
