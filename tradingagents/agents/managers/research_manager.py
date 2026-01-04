@@ -45,6 +45,7 @@ Debate History:
         new_investment_debate_state.update({
             "judge_decision": response.content,
             "current_response": response.content,
+            "recalled_memories": past_memories  # Store retrieved memories in state
         })
 
         return {

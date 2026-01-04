@@ -273,14 +273,42 @@ if run_btn:
                 st.markdown(capture.get_debate_transcript())
 
             # 3. Verified Sources (Fact Checker Results)
-            if final_state and "investment_debate_state" in final_state and "verified_urls" in final_state["investment_debate_state"]:
-                verified_urls = final_state["investment_debate_state"]["verified_urls"]
-                if verified_urls:
+            if final_state and "investment_debate_state" in final_state:
+                state_data = final_state["investment_debate_state"]
+                
+                # 3-A. Recalled Memories (Obsidian)
+                if "recalled_memories" in state_data:
+                    st.subheader("🧠 Recalled Memories (RAG)")
+                    memories = state_data["recalled_memories"]
+                    
+                    if memories:
+                        st.caption("Past insights retrieved from your Obsidian Vault that influenced this decision.")
+                        for i, mem in enumerate(memories):
+                            similarity = mem.get('similarity_score', 0)
+                            # Extract title from 'matched_situation' if format is 'Note Title: ...'
+                            situation_text = mem['matched_situation']
+                            title = "Past Situation"
+                            if "Note Title:" in situation_text:
+                                try:
+                                    title = situation_text.split("Note Title:")[1].split("\n")[0].strip()
+                                except:
+                                    pass
+                            
+                            with st.expander(f"📄 {title} (Similarity: {similarity:.1%})"):
+                                st.markdown(f"**Context:**\n{situation_text[:200]}...")
+                                st.markdown(f"**Insight/Advice:**\n{mem['recommendation']}")
+                    else:
+                        st.info("No similar past memories found in Obsidian for this situation.")
+                else:
+                    # Fallback for debugging (Should not happen if code is updated)
+                    st.warning("⚠️ Agent did not return memory data. (Check Research Manager)")
+
+                # 3-B. Verified Sources
+                if "verified_urls" in state_data and state_data["verified_urls"]:
                     st.subheader("✅ Verified Sources & Fact Check")
                     st.caption("URLs verified by Fact Checker via direct connection test.")
                     
-                    # Transform list of dicts to a clean format for display
-                    # verified_urls is [{'url':..., 'status':..., 'source':...}]
+                    verified_urls = state_data["verified_urls"]
                     st.dataframe(
                         verified_urls, 
                         column_config={
