@@ -41,14 +41,11 @@ Debate History:
         # Log the manager's decision
         print(f"\n\n[Research Manager Decision]\n{response.content}\n")
 
-        new_investment_debate_state = {
+        new_investment_debate_state = investment_debate_state.copy()
+        new_investment_debate_state.update({
             "judge_decision": response.content,
-            "history": investment_debate_state.get("history", ""),
-            "bear_history": investment_debate_state.get("bear_history", ""),
-            "bull_history": investment_debate_state.get("bull_history", ""),
             "current_response": response.content,
-            "count": investment_debate_state["count"],
-        }
+        })
 
         return {
             "investment_debate_state": new_investment_debate_state,

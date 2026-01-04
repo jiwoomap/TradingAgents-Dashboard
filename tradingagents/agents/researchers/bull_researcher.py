@@ -24,6 +24,10 @@ def create_bull_researcher(llm, memory):
 
         prompt = f"""You are a Bull Analyst advocating for investing in the stock. Your task is to build a strong, evidence-based case emphasizing growth potential, competitive advantages, and positive market indicators. Leverage the provided research and data to address concerns and counter bearish arguments effectively.
 
+CRITICAL INSTRUCTION: You must CITE your sources. Whenever you mention a fact, number, or news event, explicitly state where it came from using the provided reports.
+Format: "Revenue grew 20% (Source: Fundamentals Report)" or "New AI chip launched (Source: News Report, [Date])".
+DO NOT hallucinate information not present in the provided reports.
+
 Key points to focus on:
 - Growth Potential: Highlight the company's market opportunities, revenue projections, and scalability.
 - Competitive Advantages: Emphasize factors like unique products, strong branding, or dominant market positioning.
