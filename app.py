@@ -4,6 +4,7 @@ import os
 import io
 import threading
 import traceback
+import re
 from datetime import datetime
 from openai import OpenAI
 
@@ -40,24 +41,28 @@ class StreamlitOutputCapture(io.StringIO):
         self.placeholder = placeholder
         self.output_buffer = ""
         self.log_file_path = log_file_path
+        self.debate_buffer = [] # Store filtered debate messages
         
         # Create logs directory if it doesn't exist
         os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 
     def write(self, string):
-        # 1. Write to memory buffer for UI
+        # 1. Filter and store debate messages
+        self._filter_debate_message(string)
+
+        # 2. Write to memory buffer for UI
         self.output_buffer += string
         if len(self.output_buffer) > 100000:
             self.output_buffer = self.output_buffer[-50000:]
         
-        # 2. Write to file
+        # 3. Write to file
         try:
             with open(self.log_file_path, "a", encoding="utf-8") as f:
                 f.write(string)
         except Exception:
             pass # Ignore file write errors
         
-        # 3. Update UI
+        # 4. Update UI
         try:
             self.placeholder.code(self.output_buffer[-5000:], language="text")
         except Exception:
@@ -65,6 +70,65 @@ class StreamlitOutputCapture(io.StringIO):
             
     def get_logs(self):
         return self.output_buffer
+
+    def _filter_debate_message(self, text):
+        """Filter specific agent messages for the debate log."""
+        # Simple keywords to identify agent speech
+        keywords = [
+            "Bull Analyst:", "Bear Analyst:", 
+            "[Research Manager Decision]", 
+            "Risky Analyst:", "Safe Analyst:", "Neutral Analyst:", 
+            "[Risk Manager Decision]"
+        ]
+        
+        # Check if the text block contains any of the keywords
+        for keyword in keywords:
+            if keyword in text:
+                # Clean up and format
+                clean_text = text.strip()
+                if clean_text:
+                    self.debate_buffer.append(clean_text)
+                break
+    
+    def get_debate_transcript(self):
+        """Return the formatted debate transcript."""
+        if not self.debate_buffer:
+            return "No debate transcript available."
+            
+        transcript = ""
+        for msg in self.debate_buffer:
+            if "Bull Analyst:" in msg:
+                transcript += f"### 🐂 {msg}\n\n---\n\n"
+            elif "Bear Analyst:" in msg:
+                transcript += f"### 🐻 {msg}\n\n---\n\n"
+            elif "[Research Manager Decision]" in msg:
+                transcript += f"### 👨‍⚖️ {msg}\n\n---\n\n"
+            elif "Risky Analyst:" in msg:
+                transcript += f"### 🚀 {msg}\n\n---\n\n"
+            elif "Safe Analyst:" in msg:
+                transcript += f"### 🛡️ {msg}\n\n---\n\n"
+            elif "Neutral Analyst:" in msg:
+                transcript += f"### ⚖️ {msg}\n\n---\n\n"
+            elif "[Risk Manager Decision]" in msg:
+                transcript += f"### 👮 {msg}\n\n---\n\n"
+            else:
+                transcript += f"{msg}\n\n---\n\n"
+        return transcript
+
+    def save_debate_log(self):
+        """Save the filtered debate log to a markdown file."""
+        if not self.debate_buffer:
+            return None
+            
+        debate_path = self.log_file_path.replace(".log", "_debate.md")
+        try:
+            with open(debate_path, "w", encoding="utf-8") as f:
+                f.write(f"# 💬 Analyst Debate Log\n")
+                f.write(f"**Ticker:** {ticker} | **Date:** {target_date}\n\n---\n\n")
+                f.write(self.get_debate_transcript())     
+            return debate_path
+        except Exception as e:
+            return None
 
 def generate_summary(logs, model_name):
     """Generate a structured summary using LLM based on the execution logs."""
@@ -150,12 +214,15 @@ if run_btn:
             
             # Restore stdout immediately after success
             sys.stdout = original_stdout
+            
+            # Save Debate Log
+            debate_log_path = capture.save_debate_log()
 
             # Display Results
             st.divider()
-            st.subheader("📊 Final Decision & Summary")
             
-            # 1. Display Simple Decision
+            # 1. Final Decision
+            st.subheader("📊 Final Decision")
             if isinstance(decision, dict) and "decision" in decision:
                  final_decision = decision["decision"]
             else:
@@ -164,51 +231,34 @@ if run_btn:
             
             st.info(f"### Decision: {final_decision}")
             
-            # 2. Generate and Display AI Summary
+            # 2. Debate Transcript (New Section)
+            st.subheader("💬 Analyst Debate Transcript")
+            with st.container(height=500):
+                st.markdown(capture.get_debate_transcript())
+
+            # 3. Generate and Display AI Summary
+            st.subheader("📝 AI Analysis Summary")
             with st.spinner("✍️ Writing final report based on agent debates..."):
                 logs = capture.get_logs()
                 summary = generate_summary(logs, model_name)
                 st.markdown(summary)
                 
-                # 3. Save summary to a separate file
+                # Save summary to a separate file
                 try:
                     summary_path = log_path.replace(".log", "_summary.md")
                     with open(summary_path, "w", encoding="utf-8") as f:
                         f.write(f"# Analysis Summary for {ticker} ({date_str})\n\n")
                         f.write(f"**Final Decision: {final_decision}**\n\n")
                         f.write(summary)
-                    st.caption(f"Summary saved to: `{summary_path}`")
+                    
+                    st.success("Analysis artifacts saved successfully:")
+                    st.write(f"- 📄 **Raw Logs:** `{log_path}`")
+                    if debate_log_path:
+                        st.write(f"- 💬 **Debate Log:** `{debate_log_path}`")
+                    st.write(f"- 📝 **Summary Report:** `{summary_path}`")
+                    
                 except Exception as save_e:
                     st.warning(f"Could not save summary file: {str(save_e)}")
-                
-                # Save summary to file
-                try:
-                    summary_path = log_path.replace(".log", "_summary.md")
-                    with open(summary_path, "w", encoding="utf-8") as f:
-                        f.write(summary)
-                    st.caption(f"Summary saved to: `{summary_path}`")
-                except Exception as e:
-                    st.warning(f"Failed to save summary file: {str(e)}")
-                
-                # Save summary to file
-                try:
-                    summary_path = log_path.replace(".log", "_summary.md")
-                    with open(summary_path, "w", encoding="utf-8") as f:
-                        f.write(f"# Analysis Summary for {ticker} ({date_str})\n\n")
-                        f.write(f"**Final Decision:** {final_decision}\n\n")
-                        f.write(summary)
-                    st.caption(f"Summary report saved to: `{summary_path}`")
-                except Exception as save_e:
-                    st.warning(f"Could not save summary file: {str(save_e)}")
-                
-                # Save summary to file
-                try:
-                    summary_path = log_path.replace(".log", "_summary.md")
-                    with open(summary_path, "w", encoding="utf-8") as f:
-                        f.write(summary)
-                    st.caption(f"Summary report saved to: `{summary_path}`")
-                except Exception as e:
-                    st.warning(f"Could not save summary file: {str(e)}")
 
         except Exception as e:
             # Restore stdout in case of error
