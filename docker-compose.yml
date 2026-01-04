@@ -8,3 +8,4 @@ services:
     volumes:
       - .:/app
       - ./logs:/app/logs
+      - ${OBSIDIAN_VAULT_PATH:-./obsidian_vault}:/app/obsidian_vault

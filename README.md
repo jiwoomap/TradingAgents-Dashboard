@@ -19,6 +19,8 @@
 - **Persistent Logs:** Analysis logs are automatically saved to `logs/YYYY-MM-DD/TICKER/`.
 - **Debate Transcript:** Extracts specific analyst discussions into a readable `_debate.md` file.
 - **Auto-Summary:** Generates and saves a structured AI summary report (`_summary.md`) alongside the logs.
+- **✅ Fact Checker with URL Verification:** Automatically verifies if cited news URLs are physically accessible and valid (prevents hallucinations).
+- **🧠 Obsidian Memory Integration:** Syncs your analysis reports with an Obsidian Vault for long-term memory and knowledge retrieval.
 
 ## 🐳 Quick Start
 
@@ -42,18 +44,56 @@
    # ALPHA_VANTAGE_API_KEY=... (Optional - Defaults to yfinance/Google if missing)
    ```
 
-3. **Run with Docker:**
+3. **(Optional) Mount Obsidian Vault:**
+   To use the **Memory Integration** feature, you can either manually mount the volume in `docker-compose.yml` or simply add your local path to the `.env` file.
+
+   **Method A: Using .env (Recommended)**
+   Add your local Obsidian Vault absolute path to `.env`:
    ```bash
-   docker-compose up -d
+   OBSIDIAN_VAULT_PATH="/Users/yourname/Documents/ObsidianVault"
    ```
 
-4. **Access Dashboard:**
+   **Method B: Manual Docker Volume**
+   Edit `docker-compose.yml`:
+   ```yaml
+   services:
+     trading-agents:
+       volumes:
+         # ... existing volumes ...
+         - /Users/yourname/Documents/ObsidianVault:/app/obsidian_vault
+   ```
+
+4. **Run with Docker:**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+5. **Access Dashboard:**
    Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ## 🚀 Roadmap
 You can easily run this yourself using Docker. I plan to update the UI whenever I have free time.
 
 The **next milestone** is to build a **"Watchlist Dashboard"** where you can set up your favorite stocks and view them all at a glance.
+
+---
+
+## 🛠️ Advanced Features
+
+### ✅ Fact Checker (URL Verification)
+The enhanced Fact Checker agent now **physically pings** URLs cited in news reports.
+- **Validates Sources:** Checks if the link returns 200 OK.
+- **Anti-Bot Handling:** Treats 403 Forbidden as `VALID (Protected)` to avoid false positives on sites like Bloomberg or WSJ.
+- **Prevents Hallucinations:** Flags claims based on dead or non-existent links.
+
+### 🧠 Obsidian Integration (Long-term Memory)
+Connect your Obsidian Vault to give the agents "Long-term Memory". This allows the AI to learn from your past notes and trading journals.
+
+1. **Sync (Memorize):** Click `Sync Memories` in the dashboard to load `.md` notes from your vault into the vector DB. The AI indexes your notes as "Situations" (Title/Context) and "Knowledge" (Content).
+2. **Retrieve (Recall):** During analysis, the agents automatically search your vault for past market situations similar to the current one.
+   - *Example:* "Last time inflation rose while tech stocks fell, I noted that defensive sectors outperformed." -> Agents will see this note and apply it to today's decision.
+3. **Auto-Save (Record):** Analysis reports (`_summary.md`, `_debate.md`) are automatically saved to `YourVault/TradingAgents/Reports/` for future reference.
+
 
 ---
 

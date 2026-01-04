@@ -15,6 +15,8 @@ from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 from dotenv import load_dotenv
 
+from tradingagents.agents.utils.memory import FinancialSituationMemory
+
 # Load environment variables
 load_dotenv()
 
@@ -33,7 +35,41 @@ with st.sidebar:
     model_name = st.selectbox("LLM Model", ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"], index=1)
     debate_rounds = st.slider("Debate Rounds", 1, 5, 2)
 
+    st.subheader("🧠 Knowledge Base (Obsidian)")
+    
+    # Get local path from env for display
+    env_vault_path = os.getenv("OBSIDIAN_VAULT_PATH", "")
+    
+    # UI shows the local path (user friendly)
+    user_input_path = st.text_input("Vault Path (Local Absolute Path)", value=env_vault_path)
+    
+    # Logic to determine the actual internal path to use
+    # If running in Docker, we must use the mount point /app/obsidian_vault
+    # mapping logic: if user_input == env_path and /app/obsidian_vault exists -> use /app/obsidian_vault
+    
+    obsidian_path = user_input_path
+    is_docker = os.path.exists("/app/obsidian_vault")
+    
+    if is_docker and user_input_path == env_vault_path:
+        obsidian_path = "/app/obsidian_vault"
+        st.caption(f"ℹ️ Docker Mode: Local path `{user_input_path}` is mounted to `{obsidian_path}` inside the container.")
+    elif is_docker:
+        st.warning("⚠️ You are in Docker mode. Unless you mounted a different volume, custom paths might not work.")
+        
+    enable_obsidian_save = st.checkbox("Auto-save reports to Obsidian", value=True)
+    
     run_btn = st.button("Analyze", type="primary")
+    
+    if st.button("Sync Memories from Obsidian"):
+        if not os.path.exists(obsidian_path):
+            st.error(f"Path not found: {obsidian_path}\n\nDid you mount your local vault to Docker? Add this to docker-compose.yml:\n`- /path/to/your/vault:/app/obsidian_vault`")
+        else:
+            with st.spinner("Syncing markdown notes..."):
+                # Temporary init to access memory
+                temp_config = DEFAULT_CONFIG.copy()
+                temp_mem = FinancialSituationMemory("invest_judge_memory", temp_config)
+                msg = temp_mem.load_from_obsidian(obsidian_path)
+                st.success(msg)
 
 class StreamlitOutputCapture(io.StringIO):
     def __init__(self, placeholder, log_file_path):
@@ -279,6 +315,30 @@ if run_btn:
                     
                 except Exception as save_e:
                     st.warning(f"Could not save summary file: {str(save_e)}")
+
+                # Save to Obsidian if enabled
+                if enable_obsidian_save and obsidian_path and os.path.exists(obsidian_path):
+                    try:
+                        # Initialize memory to use save function
+                        mem = ta.invest_judge_memory
+                        
+                        # Save Summary
+                        summary_filename = f"{ticker}_{date_str}_Summary.md"
+                        summary_content = f"# Analysis Summary for {ticker} ({date_str})\n\n**Final Decision: {final_decision}**\n\n{summary}"
+                        success, msg = mem.save_to_obsidian(summary_content, summary_filename, obsidian_path)
+                        
+                        # Save Debate Log
+                        debate_filename = f"{ticker}_{date_str}_Debate.md"
+                        debate_content = f"# 💬 Analyst Debate Log\n**Ticker:** {ticker} | **Date:** {target_date}\n\n---\n\n{capture.get_debate_transcript()}"
+                        mem.save_to_obsidian(debate_content, debate_filename, obsidian_path)
+                        
+                        if success:
+                            st.info(f"💎 Saved reports to Obsidian Vault: `{obsidian_path}/TradingAgents/Reports`")
+                        else:
+                            st.warning(f"Obsidian save failed: {msg}")
+                            
+                    except Exception as e:
+                        st.warning(f"Failed to save to Obsidian: {str(e)}")
 
         except Exception as e:
             # Restore stdout in case of error
