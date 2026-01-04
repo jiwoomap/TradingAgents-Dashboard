@@ -47,6 +47,9 @@ Use this information to deliver a compelling bear argument, refute the bull's cl
         response = llm.invoke(prompt)
 
         argument = f"Bear Analyst: {response.content}"
+        
+        # Log the argument
+        print(f"\n\n{argument}\n")
 
         new_investment_debate_state = {
             "history": history + "\n" + argument,

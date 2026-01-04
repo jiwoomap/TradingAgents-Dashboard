@@ -36,6 +36,9 @@ Engage by questioning their optimism and emphasizing the potential downsides the
         response = llm.invoke(prompt)
 
         argument = f"Safe Analyst: {response.content}"
+        
+        # Log the argument
+        print(f"\n\n{argument}\n")
 
         new_risk_debate_state = {
             "history": history + "\n" + argument,

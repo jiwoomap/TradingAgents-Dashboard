@@ -44,6 +44,9 @@ Deliverables:
 Focus on actionable insights and continuous improvement. Build on past lessons, critically evaluate all perspectives, and ensure each decision advances better outcomes."""
 
         response = llm.invoke(prompt)
+        
+        # Log the risk manager's decision
+        print(f"\n\n[Risk Manager Decision]\n{response.content}\n")
 
         new_risk_debate_state = {
             "judge_decision": response.content,

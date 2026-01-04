@@ -35,6 +35,9 @@ Engage actively by addressing any specific concerns raised, refuting the weaknes
         response = llm.invoke(prompt)
 
         argument = f"Risky Analyst: {response.content}"
+        
+        # Log the argument
+        print(f"\n\n{argument}\n")
 
         new_risk_debate_state = {
             "history": history + "\n" + argument,

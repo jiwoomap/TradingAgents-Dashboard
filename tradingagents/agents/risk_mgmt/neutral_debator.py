@@ -35,6 +35,9 @@ Engage actively by analyzing both sides critically, addressing weaknesses in the
         response = llm.invoke(prompt)
 
         argument = f"Neutral Analyst: {response.content}"
+        
+        # Log the argument
+        print(f"\n\n{argument}\n")
 
         new_risk_debate_state = {
             "history": history + "\n" + argument,
