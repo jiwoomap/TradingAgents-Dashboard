@@ -44,6 +44,11 @@
 4. **Access Dashboard:**
    Open [http://localhost:8501](http://localhost:8501) in your browser.
 
+## 🚀 Roadmap
+You can easily run this yourself using Docker. I plan to update the UI whenever I have free time.
+
+The **next milestone** is to build a **"Watchlist Dashboard"** where you can set up your favorite stocks and view them all at a glance.
+
 ---
 
 ## 🏗️ Architecture (Original)
