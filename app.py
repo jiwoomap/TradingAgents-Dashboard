@@ -47,32 +47,6 @@ with st.sidebar:
     
     st.subheader("📊 Select Asset")
     
-    # 1. Improved Theme-aware Guide Box
-    st.markdown("""
-    <style>
-    .ticker-guide {
-        background-color: rgba(151, 166, 195, 0.08);
-        padding: 15px;
-        border-radius: 10px;
-        border: 1px solid rgba(151, 166, 195, 0.2);
-        margin-bottom: 20px;
-        font-size: 0.85rem;
-    }
-    .ticker-guide a { color: #ff4b4b; text-decoration: none; font-weight: bold; }
-    .ticker-guide code { background-color: rgba(255,255,255,0.1); padding: 2px 5px; border-radius: 3px; color: #ff4b4b; }
-    .guide-row { margin-bottom: 5px; display: flex; justify-content: space-between; }
-    </style>
-    <div class="ticker-guide">
-        <div style="margin-bottom: 10px; text-align: center;">
-            🔍 <a href="https://finance.yahoo.com" target="_blank">Search on Yahoo Finance</a>
-        </div>
-        <div class="guide-row"><span>🇺🇸 USA:</span> <code>AAPL</code></div>
-        <div class="guide-row"><span>🇰🇷 KOSPI:</span> <code>005930.KS</code></div>
-        <div class="guide-row"><span>🇰🇷 KOSDAQ:</span> <code>066970.KQ</code></div>
-        <div class="guide-row"><span>🇨🇳 China:</span> <code>600519.SS</code></div>
-    </div>
-    """, unsafe_allow_html=True)
-
     # 2. Integrated Smart Ticker Input
     if 'ticker' not in st.session_state:
         st.session_state.ticker = "NVDA"
@@ -93,11 +67,19 @@ with st.sidebar:
             for s in suggestions[:3]:
                 symbol = s.split(" | ")[0].strip()
                 name = s.split(" | ")[1].strip()
+                
+                # Auto-convert Korean tickers to Alpha Vantage format (KRX:XXXXXX)
+                if symbol.endswith(".KS") or symbol.endswith(".KQ"):
+                    clean_code = symbol.split(".")[0]
+                    final_ticker = f"KRX:{clean_code}"
+                else:
+                    final_ticker = symbol
+
                 if st.button(f"🎯 {symbol} | {name[:20]}...", 
                              key=f"btn_{symbol}", 
                              use_container_width=True,
                              help=s): # Show full name on hover
-                    st.session_state.ticker = symbol
+                    st.session_state.ticker = final_ticker
                     st.rerun()
     
     # Final ticker value used for analysis
