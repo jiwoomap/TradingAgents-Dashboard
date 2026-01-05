@@ -56,6 +56,9 @@ Engage by questioning their optimism and emphasizing the potential downsides the
             "count": risk_debate_state["count"] + 1,
         }
 
-        return {"risk_debate_state": new_risk_debate_state}
+        return {
+            "messages": [response],
+            "risk_debate_state": new_risk_debate_state
+        }
 
     return safe_node

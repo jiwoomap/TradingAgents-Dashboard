@@ -62,6 +62,7 @@ Focus on actionable insights and continuous improvement. Build on past lessons, 
         }
 
         return {
+            "messages": [response],
             "risk_debate_state": new_risk_debate_state,
             "final_trade_decision": response.content,
         }

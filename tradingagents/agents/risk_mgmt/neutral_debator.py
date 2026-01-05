@@ -53,6 +53,9 @@ Engage actively by analyzing both sides critically, addressing weaknesses in the
             "count": risk_debate_state["count"] + 1,
         }
 
-        return {"risk_debate_state": new_risk_debate_state}
+        return {
+            "messages": [response],
+            "risk_debate_state": new_risk_debate_state
+        }
 
     return neutral_node

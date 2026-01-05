@@ -53,6 +53,9 @@ Engage actively by addressing any specific concerns raised, refuting the weaknes
             "count": risk_debate_state["count"] + 1,
         }
 
-        return {"risk_debate_state": new_risk_debate_state}
+        return {
+            "messages": [response],
+            "risk_debate_state": new_risk_debate_state
+        }
 
     return risky_node

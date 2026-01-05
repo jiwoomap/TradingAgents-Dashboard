@@ -49,6 +49,7 @@ Debate History:
         })
 
         return {
+            "messages": [response],
             "investment_debate_state": new_investment_debate_state,
             "investment_plan": response.content,
         }
