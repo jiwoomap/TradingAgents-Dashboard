@@ -1,7 +1,15 @@
 # 📈 TradingAgents-Dashboard (Personal Trading Room)
 
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![License](https://img.shields.io/github/license/jiwoomap/TradingAgents-Dashboard)
+[![Python CI](https://github.com/jiwoomap/TradingAgents-Dashboard/actions/workflows/python-app.yml/badge.svg)](https://github.com/jiwoomap/TradingAgents-Dashboard/actions/workflows/python-app.yml)
+
 > 🚀 **Your Personal AI Analyst with Long-term Memory.**  
 > A Dockerized dashboard that turns [TradingAgents](https://github.com/TauricResearch/TradingAgents) into a personalized trading assistant. It not only analyzes the market but also **remembers your insights via [Obsidian](https://obsidian.md).**
+
+<p align="center">
+  <img src="assets/demo.gif" alt="Demo Animation" width="100%">
+</p>
 
 <details>
 <summary>📸 <strong>Click to view Dashboard Screenshot</strong></summary>
@@ -81,6 +89,11 @@ The enhanced Fact Checker agent now **physically pings** URLs cited in news repo
 - **Prevents Hallucinations:** Flags claims based on dead or non-existent links.
 
 ---
+
+## 🗺️ Roadmap
+
+- [ ] **Backtesting Module:** Validate agent strategies against historical data.
+- [ ] **Multi-Model Support:** Integration with other AI APIs (Claude, Gemini, DeepSeek) and Local LLMs (Ollama).
 
 ## 🏗️ Architecture (Original)
 This project wraps the **TradingAgents** framework, a multi-agent system that simulates a real-world trading firm.
