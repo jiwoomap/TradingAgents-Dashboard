@@ -1,3 +1,4 @@
+import os
 import chromadb
 from chromadb.config import Settings
 from openai import OpenAI
@@ -10,7 +11,9 @@ class FinancialSituationMemory:
         else:
             self.embedding = "text-embedding-3-small"
         self.client = OpenAI(base_url=config["backend_url"])
-        self.chroma_client = chromadb.Client(Settings(allow_reset=True))
+        # Use PersistentClient to save data to disk
+        db_path = os.path.join(config.get("project_dir", "."), "chroma_db")
+        self.chroma_client = chromadb.PersistentClient(path=db_path, settings=Settings(allow_reset=True))
         self.situation_collection = self.chroma_client.get_or_create_collection(name=name)
 
     def get_embedding(self, text):

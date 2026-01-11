@@ -5,7 +5,7 @@
 [![Python CI](https://github.com/jiwoomap/TradingAgents-Dashboard/actions/workflows/python-app.yml/badge.svg)](https://github.com/jiwoomap/TradingAgents-Dashboard/actions/workflows/python-app.yml)
 
 > 🚀 **Your Personal AI Analyst with Long-term Memory.**  
-> A Dockerized dashboard that turns [TradingAgents](https://github.com/TauricResearch/TradingAgents) into a personalized trading assistant. It not only analyzes the market but also **remembers your insights via [Obsidian](https://obsidian.md).**
+> A Dockerized dashboard that turns [TradingAgents](https://github.com/TauricResearch/TradingAgents) into a personalized trading assistant. It not only analyzes the market but also **remembers your insights via Markdown files (RAG).**
 
 <p align="center">
   <img src="assets/demo.gif" alt="Demo Animation" width="100%">
@@ -25,14 +25,14 @@ Most AI trading tools are "stateless"—they analyze and forget.
 **TradingAgents-Dashboard** is designed for individual traders who want to **accumulate knowledge**.
 
 1.  **Visualize:** No more terminal logs. Watch agents debate in a clean Web UI.
-2.  **Persist:** External news links rot, and data disappears. This tool auto-saves the full analysis context to your local **[Obsidian Vault](https://obsidian.md)**, ensuring your knowledge base remains intact forever.
+2.  **Persist:** External news links rot, and data disappears. This tool auto-saves the full analysis context to your local storage, ensuring your knowledge base remains intact forever.
 3.  **Grow:** Agents retrieve your past notes (RAG) to learn from previous successes and mistakes.
 > *Your trading data belongs to you, forever.*
 
 ## ✨ Key Features
 - **Dockerized Setup:** One-command deployment (`docker-compose up`).
 - **Web Dashboard:** Interactive UI built with Streamlit.
-- **🧠 Obsidian Memory:** Syncs analysis reports with your local vault for long-term retention.
+- **🧠 Persistent Memory (RAG):** Syncs analysis reports with your local Markdown files (compatible with Obsidian, VS Code, etc.) for long-term retention.
 - **✅ Fact Checker:** Physically validates news URLs to prevent hallucinations.
 - **Debate Transcript:** Extracts key arguments into readable markdown.
 - **Auto-Summary:** Generates structured AI summary reports (`_summary.md`).
@@ -42,7 +42,7 @@ Most AI trading tools are "stateless"—they analyze and forget.
 ### Prerequisites
 - Docker & Docker Compose
 - OpenAI API Key
-- Obsidian Vault (Optional, for memory features)
+- A directory for storing Markdown notes (e.g., Obsidian Vault, or any folder)
 
 ### Installation & Run
 1. **Clone the repository:**
@@ -57,11 +57,12 @@ Most AI trading tools are "stateless"—they analyze and forget.
    # Edit .env and add your API keys
    ```
 
-3. **(Optional) Mount Obsidian Vault:**
-   To use the **Memory Integration** feature, simply add your local Obsidian path to `.env`:
+3. **(Optional) Mount Knowledge Base:**
+   To use the **Memory Integration** feature, add the path to your Markdown notes folder to `.env`.
+   *(While Obsidian is recommended for viewing, any folder with `.md` files works!)*
    ```bash
-   # Recommended: Add to .env
-   OBSIDIAN_VAULT_PATH="/Users/yourname/Documents/ObsidianVault"
+   # Add to .env
+   OBSIDIAN_VAULT_PATH="/Users/yourname/Documents/MyTradingNotes"
    ```
 
 4. **Run with Docker:**
@@ -74,13 +75,16 @@ Most AI trading tools are "stateless"—they analyze and forget.
 
 ## 🛠️ Advanced Features
 
-### 🧠 Obsidian Integration (Long-term Memory)
-Connect your Obsidian Vault to give the agents "Long-term Memory". This ensures that even if original news links rot or data is lost online, your personal knowledge base remains preserved and reusable.
+### 🧠 Persistent Memory (RAG) & Knowledge Accumulation
+Give your agents "Long-term Memory". This ensures that even if original news links rot or data is lost online, your personal knowledge base remains preserved and reusable.
 
-1.  **Sync (Memorize):** Click `Sync Memories` to load `.md` notes from your vault into the vector DB. The AI indexes your notes as "Situations" (Title/Context) and "Knowledge" (Content).
-2.  **Retrieve (Recall):** During analysis, agents automatically search your vault for past market situations similar to the current one.
+**Any Markdown (`.md`) file works!** You don't strictly need Obsidian.
+You can manage your trading simulation logs, strategy notes, and market insights in **any editor** (VS Code, Notepad, Obsidian). As you accumulate more notes, the agent becomes a **smarter simulation partner** tailored to your trading style.
+
+1.  **Sync (Memorize):** Click `Sync Memories` to load `.md` notes from your mounted folder into the vector DB. The AI indexes your notes as "Situations" (Title/Context) and "Knowledge" (Content).
+2.  **Retrieve (Recall):** During analysis, agents automatically search your local files for past market situations similar to the current one.
     *   *Example:* "Last time inflation rose while tech stocks fell, I noted that defensive sectors outperformed." -> Agents will recall this note and apply it to today's decision.
-3.  **Auto-Save (Record):** Analysis reports (`_summary.md`, `_debate.md`) are automatically saved to `YourVault/TradingAgents/Reports/` for future reference.
+3.  **Auto-Save (Record):** Analysis reports (`_summary.md`, `_debate.md`) are automatically saved to your folder (`TradingAgents/Reports/`) for future reference.
 
 ### ✅ Fact Checker (URL Verification)
 The enhanced Fact Checker agent now **physically pings** URLs cited in news reports.

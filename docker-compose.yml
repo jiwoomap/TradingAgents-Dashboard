@@ -8,4 +8,5 @@ services:
     volumes:
       - .:/app
       - ./logs:/app/logs
+      - ./chroma_db:/app/chroma_db
       - ${OBSIDIAN_VAULT_PATH:-./obsidian_vault}:/app/obsidian_vault
