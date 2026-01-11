@@ -34,6 +34,12 @@ def get_stock_news_openai(query, start_date, end_date):
         store=True,
     )
 
+    # Safely access response output
+    if not response.output or len(response.output) < 2:
+        raise ValueError("OpenAI response output is empty or insufficient")
+    if not response.output[1].content or len(response.output[1].content) < 1:
+        raise ValueError("OpenAI response content is empty")
+
     return response.output[1].content[0].text
 
 
@@ -69,6 +75,12 @@ def get_global_news_openai(curr_date, look_back_days=7, limit=5):
         store=True,
     )
 
+    # Safely access response output
+    if not response.output or len(response.output) < 2:
+        raise ValueError("OpenAI response output is empty or insufficient")
+    if not response.output[1].content or len(response.output[1].content) < 1:
+        raise ValueError("OpenAI response content is empty")
+
     return response.output[1].content[0].text
 
 
@@ -103,5 +115,11 @@ def get_fundamentals_openai(ticker, curr_date):
         top_p=1,
         store=True,
     )
+
+    # Safely access response output
+    if not response.output or len(response.output) < 2:
+        raise ValueError("OpenAI response output is empty or insufficient")
+    if not response.output[1].content or len(response.output[1].content) < 1:
+        raise ValueError("OpenAI response content is empty")
 
     return response.output[1].content[0].text
