@@ -4,7 +4,7 @@ import sys
 import threading
 import time
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor
@@ -136,9 +136,9 @@ def run_analysis_task(ticker, model_name, debate_rounds, obsidian_path, enable_o
     Standalone function to run analysis and save files.
     Does NOT use streamlit calls.
     """
-    print(f"[{datetime.now()}] Starting scheduled analysis for {ticker}")
+    print(f"[{datetime.now(timezone.utc)}] Starting scheduled analysis for {ticker}")
 
-    current_time = datetime.now()
+    current_time = datetime.now(timezone.utc)
     date_str = current_time.strftime('%Y-%m-%d')
     time_str = current_time.strftime('%H%M%S')
     log_dir = os.path.join("logs", date_str, ticker)
@@ -260,7 +260,7 @@ def run_analysis_task(ticker, model_name, debate_rounds, obsidian_path, enable_o
                 print(f"Failed to save to Obsidian: {e}")
 
         # Update status: completed
-        end_time = datetime.now()
+        end_time = datetime.now(timezone.utc)
         duration = (end_time - current_time).total_seconds()
         with open(status_file, "w") as f:
             json.dump({
@@ -288,7 +288,7 @@ def run_analysis_task(ticker, model_name, debate_rounds, obsidian_path, enable_o
         traceback.print_exc()
 
         # Update status: failed
-        end_time = datetime.now()
+        end_time = datetime.now(timezone.utc)
         with open(status_file, "w") as f:
             json.dump({
                 "status": "failed",
@@ -300,7 +300,7 @@ def run_analysis_task(ticker, model_name, debate_rounds, obsidian_path, enable_o
     finally:
         sys.stdout = original_stdout
         logger.close()
-        print(f"[{datetime.now()}] Completed scheduled analysis for {ticker}")
+        print(f"[{datetime.now(timezone.utc)}] Completed scheduled analysis for {ticker}")
 
 
 def _extract_debate_from_log(text):

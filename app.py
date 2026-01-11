@@ -496,18 +496,34 @@ with tab2:
                     try:
                         # Extract info from path
                         parts = full_path.split(os.sep)
-                        date_str = parts[1]
                         ticker_str = parts[2]
-                        time_str = file.split("_")[0] # HHMMSS
 
                         # Read status
                         import json
                         with open(full_path, "r") as f:
                             status_data = json.load(f)
 
+                        # Convert UTC start_time to local timezone for display
+                        from datetime import datetime, timezone
+                        start_time_str = status_data.get("start_time", "")
+                        if start_time_str:
+                            # Parse datetime and convert to local timezone
+                            utc_time = datetime.fromisoformat(start_time_str)
+                            # If no timezone info, assume UTC
+                            if utc_time.tzinfo is None:
+                                utc_time = utc_time.replace(tzinfo=timezone.utc)
+                            local_time = utc_time.astimezone()
+                            date_str = local_time.strftime("%Y-%m-%d")
+                            time_str = local_time.strftime("%H:%M:%S")
+                        else:
+                            # Fallback to path-based extraction
+                            date_str = parts[1]
+                            time_str_raw = file.split("_")[0]
+                            time_str = f"{time_str_raw[:2]}:{time_str_raw[2:4]}:{time_str_raw[4:]}"
+
                         report_files.append({
                             "date": date_str,
-                            "time": f"{time_str[:2]}:{time_str[2:4]}:{time_str[4:]}",
+                            "time": time_str,
                             "ticker": ticker_str,
                             "status": status_data.get("status", "unknown"),
                             "progress": status_data.get("progress", 0),
