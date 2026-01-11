@@ -157,8 +157,15 @@ with st.sidebar:
                 symbol = s.split(" | ")[0].strip()
                 name = s.split(" | ")[1].strip() if " | " in s else ""
 
+                # Auto-convert Korean tickers to Alpha Vantage format (KRX:XXXXXX)
+                if symbol.endswith(".KS") or symbol.endswith(".KQ"):
+                    clean_code = symbol.split(".")[0]
+                    final_ticker = f"KRX:{clean_code}"
+                else:
+                    final_ticker = symbol
+
                 if st.button(f"**{symbol}** {name}", key=f"btn_{symbol}", use_container_width=True):
-                    st.session_state.ticker = symbol
+                    st.session_state.ticker = final_ticker
                     st.rerun()
         else:
             # If user typed but no suggestions, assume it's a direct ticker input
@@ -241,8 +248,15 @@ with st.sidebar:
                 symbol = s.split(" | ")[0].strip()
                 name = s.split(" | ")[1].strip() if " | " in s else ""
 
+                # Auto-convert Korean tickers to Alpha Vantage format (KRX:XXXXXX)
+                if symbol.endswith(".KS") or symbol.endswith(".KQ"):
+                    clean_code = symbol.split(".")[0]
+                    final_ticker = f"KRX:{clean_code}"
+                else:
+                    final_ticker = symbol
+
                 if st.button(f"**{symbol}** {name}", key=f"sched_btn_{symbol}", use_container_width=True):
-                    st.session_state.sched_ticker = symbol
+                    st.session_state.sched_ticker = final_ticker
                     st.rerun()
         else:
             # If user typed but no suggestions, assume it's a direct ticker input
