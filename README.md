@@ -32,7 +32,7 @@ Most AI trading tools are "stateless"—they analyze and forget.
 ## ✨ Key Features
 - **Dockerized Setup:** One-command deployment (`docker-compose up`).
 - **Web Dashboard:** Interactive UI built with Streamlit.
-- **🧠 Persistent Memory (RAG):** Syncs analysis reports with your local Markdown files (compatible with Obsidian, VS Code, etc.) for long-term retention.
+- **🧠 Persistent Memory (RAG):** Syncs analysis reports with your local Markdown files (compatible with [Obsidian](https://obsidian.md), VS Code, etc.) for long-term retention.
 - **✅ Fact Checker:** Physically validates news URLs to prevent hallucinations.
 - **Debate Transcript:** Extracts key arguments into readable markdown.
 - **Auto-Summary:** Generates structured AI summary reports (`_summary.md`).
@@ -107,7 +107,7 @@ This project wraps the **TradingAgents** framework, a multi-agent system that si
 - **Trader & Risk Manager:** Final decision making.
 
 ## 🤝 Reference & Credit
-This project is a fork and UI enhancement of **[TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents)**.
+This project is a UI enhancement and functional extension (Persistent Memory, RAG) based on the original **[TradingAgents](https://github.com/TauricResearch/TradingAgents)** framework.
 
 Please cite the original work if you use this for research:
 ```bibtex
