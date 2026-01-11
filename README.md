@@ -57,20 +57,26 @@ Most AI trading tools are "stateless"—they analyze and forget.
    # Edit .env and add your API keys
    ```
 
-3. **(Optional) Mount Knowledge Base:**
-   To use the **Memory Integration** feature, add the path to your Markdown notes folder to `.env`.
-   *(While Obsidian is recommended for viewing, any folder with `.md` files works!)*
-   ```bash
-   # Add to .env
-   OBSIDIAN_VAULT_PATH="/Users/yourname/Documents/MyTradingNotes"
-   ```
+   **Required Configuration:**
+   - `LLM_PROVIDER=openai` - Currently only OpenAI is supported
+   - `OPENAI_API_KEY` - Get your key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 
-4. **Run with Docker:**
+   **Recommended (Optional):**
+   - `ALPHA_VANTAGE_API_KEY` - **Highly recommended for better analysis quality!**
+     - Provides more comprehensive stock data and significantly improves news data quality
+     - Get a FREE API key at [alphavantage.co/support/#api-key](https://www.alphavantage.co/support/#api-key)
+     - Free tier has rate limits but is sufficient for most use cases
+   - `OBSIDIAN_VAULT_PATH` - Path to your Markdown notes folder for persistent memory/RAG
+     - Example: `/Users/yourname/Documents/MyTradingNotes`
+     - Docker users: Use `/app/obsidian_vault` (mapped in docker-compose.yml)
+     - Any folder with `.md` files works (Obsidian recommended for viewing)
+
+3. **Run with Docker:**
    ```bash
    docker-compose up --build -d
    ```
 
-5. **Access Dashboard:**
+4. **Access Dashboard:**
    Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ## 🛠️ Advanced Features
