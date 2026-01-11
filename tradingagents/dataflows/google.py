@@ -30,3 +30,21 @@ def get_google_news(
         return ""
 
     return f"## {query} Google News, from {before} to {curr_date}:\n\n{news_str}"
+
+
+def get_google_news_with_dates(
+    ticker: Annotated[str, "Ticker symbol"],
+    start_date: Annotated[str, "Start date in yyyy-mm-dd format"],
+    end_date: Annotated[str, "End date in yyyy-mm-dd format"],
+) -> str:
+    """
+    Adapter function that converts start_date/end_date interface to curr_date/look_back_days.
+    This allows get_google_news to work with the common news API interface.
+    """
+    # Calculate look_back_days from start_date to end_date
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
+    look_back_days = (end - start).days
+
+    # Use end_date as curr_date
+    return get_google_news(ticker, end_date, look_back_days)

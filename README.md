@@ -75,6 +75,27 @@ Most AI trading tools are "stateless"—they analyze and forget.
 
 ## 🛠️ Advanced Features
 
+### ⏰ Scheduled Analysis (Background Scheduler)
+Run automated analysis jobs continuously in the background, independent of the Streamlit web UI.
+
+When running with Docker, the scheduler starts automatically! Just access the web UI and add your schedules.
+
+**Key Features:**
+- ✅ **Auto-start in Docker** - No manual setup needed
+- 🔄 Runs independently of Streamlit app (won't stop when you close the browser)
+- 💾 Persistent job storage (survives restarts)
+- 🌍 Automatic timezone conversion (schedule in your local time, executes in UTC)
+- 📝 Auto-saves reports to Obsidian vault
+- 📊 Real-time progress tracking via status files
+
+**How to use:**
+1. Open the web UI at http://localhost:8501
+2. Go to sidebar → "Schedule New Job"
+3. Set your ticker, time, and parameters
+4. Click "Add Schedule"
+5. Jobs will run automatically at the scheduled time!
+6. View results in "Scheduled Results" tab
+
 ### 🧠 Persistent Memory (RAG) & Knowledge Accumulation
 Give your agents "Long-term Memory". This ensures that even if original news links rot or data is lost online, your personal knowledge base remains preserved and reusable.
 
