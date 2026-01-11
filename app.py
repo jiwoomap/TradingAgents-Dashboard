@@ -506,8 +506,12 @@ with tab2:
                         # Convert UTC start_time to local timezone for display
                         from datetime import datetime, timezone
                         start_time_str = status_data.get("start_time", "")
+
+                        # Get file time string for file paths (HHMMSS format from filename)
+                        file_time_str = file.split("_")[0]  # HHMMSS from filename
+
                         if start_time_str:
-                            # Parse datetime and convert to local timezone
+                            # Parse datetime and convert to local timezone for display
                             utc_time = datetime.fromisoformat(start_time_str)
                             # If no timezone info, assume UTC
                             if utc_time.tzinfo is None:
@@ -518,8 +522,7 @@ with tab2:
                         else:
                             # Fallback to path-based extraction
                             date_str = parts[1]
-                            time_str_raw = file.split("_")[0]
-                            time_str = f"{time_str_raw[:2]}:{time_str_raw[2:4]}:{time_str_raw[4:]}"
+                            time_str = f"{file_time_str[:2]}:{file_time_str[2:4]}:{file_time_str[4:]}"
 
                         report_files.append({
                             "date": date_str,
@@ -531,8 +534,8 @@ with tab2:
                             "decision": status_data.get("decision", ""),
                             "duration": status_data.get("duration", 0),
                             "error": status_data.get("error", ""),
-                            "summary_path": os.path.join(root, f"{time_str}_summary.md"),
-                            "debate_path": os.path.join(root, f"{time_str}_debate.md"),
+                            "summary_path": os.path.join(root, f"{file_time_str}_summary.md"),
+                            "debate_path": os.path.join(root, f"{file_time_str}_debate.md"),
                             "rag_enabled": status_data.get("rag_enabled", False),
                             "rag_memory_count": status_data.get("rag_memory_count", 0),
                             "obsidian_saved": status_data.get("obsidian_saved", False),
