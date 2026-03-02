@@ -51,6 +51,8 @@ class TradingAgentsGraph:
         selected_analysts=["market", "social", "news", "fundamentals"],
         debug=False,
         config: Dict[str, Any] = None,
+        enable_checkpoints: bool = False,
+        checkpointer = None
     ):
         """Initialize the trading agents graph and components.
 
@@ -58,7 +60,12 @@ class TradingAgentsGraph:
             selected_analysts: List of analyst types to include
             debug: Whether to run in debug mode
             config: Configuration dictionary. If None, uses default config
+            enable_checkpoints: Enable checkpoint-based state persistence
+            checkpointer: Optional checkpointer instance (overrides enable_checkpoints).
+                If provided, checkpointing is enabled regardless of enable_checkpoints flag.
         """
+        self.enable_checkpoints = enable_checkpoints or (checkpointer is not None)
+        self.checkpointer = checkpointer
         self.debug = debug
         self.config = config or DEFAULT_CONFIG
 
@@ -121,7 +128,10 @@ class TradingAgentsGraph:
         self.log_states_dict = {}  # date to full state dict
 
         # Set up the graph
-        self.graph = self.graph_setup.setup_graph(selected_analysts)
+        # Set up the graph
+        self.graph = self.graph_setup.setup_graph(
+            selected_analysts, checkpointer=self.checkpointer
+        )
 
     def _create_tool_nodes(self) -> Dict[str, ToolNode]:
         """Create tool nodes for different data sources using abstract methods."""
@@ -160,8 +170,15 @@ class TradingAgentsGraph:
             ),
         }
 
-    def propagate(self, company_name, trade_date):
-        """Run the trading agents graph for a company on a specific date."""
+    def propagate(self, company_name, trade_date, thread_id: Optional[str] = None):
+        """Run the trading agents graph for a company on a specific date.
+
+        Args:
+            company_name: Stock ticker symbol
+            trade_date: Date for the analysis
+            thread_id: Optional thread ID for checkpoint resumption.
+                If None and checkpoints enabled, auto-generates: {ticker}_{date}_{timestamp}
+        """
 
         self.ticker = company_name
 
@@ -170,6 +187,16 @@ class TradingAgentsGraph:
             company_name, trade_date
         )
         args = self.propagator.get_graph_args()
+
+        # Add thread_id to args if checkpointing is enabled
+        if self.enable_checkpoints:
+            if thread_id is None:
+                # Auto-generate thread_id: ticker_date_timestamp
+                from datetime import datetime
+                timestamp = datetime.now().strftime('%H%M%S')
+                thread_id = f"{company_name}_{trade_date}_{timestamp}"
+            
+            args["config"] = {"configurable": {"thread_id": thread_id}}
 
         if self.debug:
             # Debug mode with tracing
