@@ -14,6 +14,7 @@ import requests
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from tradingagents.graph.trading_graph import TradingAgentsGraph
+from tradingagents.graph.checkpoint_factory import CheckpointerFactory
 from tradingagents.default_config import DEFAULT_CONFIG
 from dotenv import load_dotenv
 
@@ -178,8 +179,45 @@ with st.sidebar:
     target_date = st.date_input("Target Analysis Date", value=datetime.now())
     model_name = st.selectbox("LLM Model", ["gpt-4o", "gpt-4o-mini", "o1-mini", "o1-preview"], index=0)
     debate_rounds = st.slider("Max Debate Rounds", min_value=1, max_value=5, value=2)
+    
+    st.divider()
+    st.subheader("💾 Checkpoint Settings")
+    st.markdown("Enable state persistence for pause/resume capability")
+    
+    enable_checkpoints = st.checkbox(
+        "Enable Checkpoints",
+        value=False,
+        help="Save analysis state to allow pause/resume and time-travel debugging. May add 10-30% overhead."
+    )
+    
+    if enable_checkpoints:
+        checkpoint_backend = st.radio(
+            "Storage Backend",
+            ["memory", "sqlite"],
+            index=0,
+            help="memory: Temporary (lost on restart) | sqlite: Persistent to disk"
+        )
+        
+        if checkpoint_backend == "sqlite":
+            checkpoint_db_path = st.text_input(
+                "SQLite Path",
+                value="./checkpoints/analysis.sqlite",
+                help="Path to SQLite database for checkpoint storage"
+            )
+        else:
+            checkpoint_db_path = None
+    else:
+        checkpoint_backend = None
+        checkpoint_db_path = None
 
-    run_btn = st.button("Analyze", type="primary", use_container_width=True)
+    run_btn = st.button("🚀 Analyze", type="primary", use_container_width=True)
+    
+    # Display checkpoint status
+    if enable_checkpoints:
+        backend_label = "Memory (Temporary)" if checkpoint_backend == "memory" else f"SQLite ({checkpoint_db_path})"
+        st.success(f"✅ Checkpoints Enabled: {backend_label}")
+    else:
+        st.info("ℹ️ Checkpoints Disabled (default)")
 
     st.divider()
     st.subheader("⏰ Schedule Analyzer")
@@ -656,10 +694,32 @@ with tab1:
                 config["quick_think_llm"] = model_name
                 config["max_debate_rounds"] = debate_rounds
                 
-                ta = TradingAgentsGraph(debug=True, config=config)
-                final_state, decision = ta.propagate(ticker, target_date.strftime("%Y-%m-%d"))
+                # Initialize checkpointer if enabled
+                checkpointer = None
+                thread_id = None
+                if enable_checkpoints:
+                    from datetime import datetime
+                    if checkpoint_backend == "sqlite":
+                        checkpointer = CheckpointerFactory.create('sqlite', db_path=checkpoint_db_path)
+                        st.info(f"💾 Using SQLite checkpoint: {checkpoint_db_path}")
+                    else:
+                        checkpointer = CheckpointerFactory.create('memory')
+                        st.info("💾 Using in-memory checkpoint (temporary)")
+                    
+                    # Generate thread_id for this run
+                    timestamp = datetime.now().strftime('%H%M%S')
+                    thread_id = f"{ticker}_{target_date.strftime('%Y-%m-%d')}_{timestamp}"
+                    st.caption(f"Thread ID: `{thread_id}`")
+                
+                ta = TradingAgentsGraph(debug=True, config=config, checkpointer=checkpointer)
+                final_state, decision = ta.propagate(ticker, target_date.strftime("%Y-%m-%d"), thread_id=thread_id)
                 
                 status_placeholder.success("✅ Analysis Complete!")
+                
+                # Display checkpoint info if enabled
+                if enable_checkpoints and thread_id:
+                    st.info(f"💾 Analysis state saved with thread ID: `{thread_id}`")
+                
                 sys.stdout = original_stdout
                 debate_log_path = capture.save_debate_log(ticker, target_date)
 
