@@ -16,7 +16,9 @@ def create_bear_researcher(llm, memory):
         fundamentals_report = state["fundamentals_report"]
 
         curr_situation = f"{market_research_report}\n\n{sentiment_report}\n\n{news_report}\n\n{fundamentals_report}"
-        past_memories = memory.get_memories(curr_situation, n_matches=2)
+        # Use filtered memory retrieval for better context
+        ticker = state.get("company_of_interest", "")
+        past_memories = memory.get_memories_filtered(curr_situation, n_matches=2, ticker=ticker)
 
         past_memory_str = ""
         for i, rec in enumerate(past_memories, 1):
