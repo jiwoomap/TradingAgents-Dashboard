@@ -70,6 +70,42 @@ Adhere strictly to these instructions, and ensure your output is detailed, accur
         result = self.quick_thinking_llm.invoke(messages).content
         return result
 
+    def _extract_metadata(self, current_state: Dict[str, Any], returns_losses: float, agent_role: str) -> Dict[str, Any]:
+        """
+        Extract metadata from current state for enhanced memory storage.
+        
+        Args:
+            current_state: The current agent state
+            returns_losses: The return/loss percentage
+            agent_role: Role of the agent (bull, bear, trader, etc.)
+        
+        Returns:
+            Dict with metadata fields
+        """
+        metadata = {
+            "ticker": current_state.get("company_of_interest", ""),
+            "date": current_state.get("trade_date", ""),
+            "agent_role": agent_role,
+            "outcome": "profit" if returns_losses > 0 else "loss",
+            "return_pct": float(returns_losses),
+        }
+        
+        # Add final decision if available
+        if "final_trade_decision" in current_state:
+            metadata["final_decision"] = current_state["final_trade_decision"]
+        
+        # Add debate outcome for investment-related agents
+        if "investment_debate_state" in current_state:
+            judge_decision = current_state["investment_debate_state"].get("judge_decision", "")
+            if "bullish" in judge_decision.lower() or "buy" in judge_decision.lower():
+                metadata["debate_winner"] = "bull"
+            elif "bearish" in judge_decision.lower() or "sell" in judge_decision.lower():
+                metadata["debate_winner"] = "bear"
+            else:
+                metadata["debate_winner"] = "neutral"
+        
+        return metadata
+
     def reflect_bull_researcher(self, current_state, returns_losses, bull_memory):
         """Reflect on bull researcher's analysis and update memory."""
         situation = self._extract_current_situation(current_state)
@@ -78,7 +114,8 @@ Adhere strictly to these instructions, and ensure your output is detailed, accur
         result = self._reflect_on_component(
             "BULL", bull_debate_history, situation, returns_losses
         )
-        bull_memory.add_situations([(situation, result)])
+        metadata = self._extract_metadata(current_state, returns_losses, "bull")
+        bull_memory.add_situations([(situation, result)], metadata=metadata)
 
     def reflect_bear_researcher(self, current_state, returns_losses, bear_memory):
         """Reflect on bear researcher's analysis and update memory."""
@@ -88,7 +125,8 @@ Adhere strictly to these instructions, and ensure your output is detailed, accur
         result = self._reflect_on_component(
             "BEAR", bear_debate_history, situation, returns_losses
         )
-        bear_memory.add_situations([(situation, result)])
+        metadata = self._extract_metadata(current_state, returns_losses, "bear")
+        bear_memory.add_situations([(situation, result)], metadata=metadata)
 
     def reflect_trader(self, current_state, returns_losses, trader_memory):
         """Reflect on trader's decision and update memory."""
@@ -98,7 +136,8 @@ Adhere strictly to these instructions, and ensure your output is detailed, accur
         result = self._reflect_on_component(
             "TRADER", trader_decision, situation, returns_losses
         )
-        trader_memory.add_situations([(situation, result)])
+        metadata = self._extract_metadata(current_state, returns_losses, "trader")
+        trader_memory.add_situations([(situation, result)], metadata=metadata)
 
     def reflect_invest_judge(self, current_state, returns_losses, invest_judge_memory):
         """Reflect on investment judge's decision and update memory."""
@@ -108,7 +147,8 @@ Adhere strictly to these instructions, and ensure your output is detailed, accur
         result = self._reflect_on_component(
             "INVEST JUDGE", judge_decision, situation, returns_losses
         )
-        invest_judge_memory.add_situations([(situation, result)])
+        metadata = self._extract_metadata(current_state, returns_losses, "invest_judge")
+        invest_judge_memory.add_situations([(situation, result)], metadata=metadata)
 
     def reflect_risk_manager(self, current_state, returns_losses, risk_manager_memory):
         """Reflect on risk manager's decision and update memory."""
@@ -118,4 +158,5 @@ Adhere strictly to these instructions, and ensure your output is detailed, accur
         result = self._reflect_on_component(
             "RISK JUDGE", judge_decision, situation, returns_losses
         )
-        risk_manager_memory.add_situations([(situation, result)])
+        metadata = self._extract_metadata(current_state, returns_losses, "risk_manager")
+        risk_manager_memory.add_situations([(situation, result)], metadata=metadata)

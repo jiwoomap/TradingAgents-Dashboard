@@ -38,7 +38,9 @@ class GraphSetup:
         self.conditional_logic = conditional_logic
 
     def setup_graph(
-        self, selected_analysts=["market", "social", "news", "fundamentals"]
+        self,
+        selected_analysts=["market", "social", "news", "fundamentals"],
+        checkpointer=None
     ):
         """Set up and compile the agent workflow graph.
 
@@ -48,6 +50,9 @@ class GraphSetup:
                 - "social": Social media analyst
                 - "news": News analyst
                 - "fundamentals": Fundamentals analyst
+            checkpointer: Optional checkpoint saver for state persistence.
+                If None, checkpointing is disabled (default behavior).
+                Use CheckpointerFactory.create() to create a checkpointer instance.
         """
         if len(selected_analysts) == 0:
             raise ValueError("Trading Agents Graph Setup Error: no analysts selected!")
@@ -201,4 +206,5 @@ class GraphSetup:
         workflow.add_edge("Risk Judge", END)
 
         # Compile and return
-        return workflow.compile()
+        # If checkpointer is provided, enable state persistence
+        return workflow.compile(checkpointer=checkpointer)
