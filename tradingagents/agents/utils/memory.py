@@ -24,8 +24,15 @@ class FinancialSituationMemory:
         )
         return response.data[0].embedding
 
-    def add_situations(self, situations_and_advice):
-        """Add financial situations and their corresponding advice. Parameter is a list of tuples (situation, rec)"""
+    def add_situations(self, situations_and_advice, metadata=None):
+        """
+        Add financial situations and their corresponding advice.
+        
+        Args:
+            situations_and_advice: List of tuples (situation, recommendation)
+            metadata: Optional dict with metadata to add to all situations
+                     (e.g., {"ticker": "NVDA", "date": "2024-05-10", "outcome": "profit"})
+        """
 
         situations = []
         advice = []
@@ -42,7 +49,7 @@ class FinancialSituationMemory:
 
         self.situation_collection.add(
             documents=situations,
-            metadatas=[{"recommendation": rec} for rec in advice],
+            metadatas=[{"recommendation": rec, **metadata} for rec in advice] if metadata else [{"recommendation": rec} for rec in advice],
             embeddings=embeddings,
             ids=ids,
         )
@@ -68,6 +75,60 @@ class FinancialSituationMemory:
                     }
                 )
 
+        return matched_results
+
+    def get_memories_filtered(self, current_situation, n_matches=1, ticker=None, outcome=None, date_range=None, agent_role=None):
+        """
+        Find matching recommendations with metadata filtering.
+        
+        Args:
+            current_situation: The situation to search for
+            n_matches: Number of results to return
+            ticker: Filter by ticker symbol (e.g., 'NVDA')
+            outcome: Filter by outcome ('profit' or 'loss')
+            date_range: Filter by date range (tuple of start, end dates as strings)
+            agent_role: Filter by agent role ('bull', 'bear', 'trader', etc.)
+            
+        Returns:
+            List of matched results with metadata
+        """
+        query_embedding = self.get_embedding(current_situation)
+        
+        # Build Chroma where filter
+        where_filter = {}
+        if ticker:
+            where_filter["ticker"] = ticker
+        if outcome:
+            where_filter["outcome"] = outcome
+        if agent_role:
+            where_filter["agent_role"] = agent_role
+        if date_range:
+            # Chroma supports $gte, $lte operators
+            where_filter["date"] = {"$gte": date_range[0]}
+            if len(date_range) > 1:
+                where_filter["date"]["$lte"] = date_range[1]
+        
+        # Query with filters
+        results = self.situation_collection.query(
+            query_embeddings=[query_embedding],
+            n_results=n_matches,
+            where=where_filter if where_filter else None,
+            include=["metadatas", "documents", "distances"],
+        )
+        
+        matched_results = []
+        if results["documents"]:
+            for i in range(len(results["documents"][0])):
+                result_metadata = results["metadatas"][0][i]
+                matched_results.append(
+                    {
+                        "matched_situation": results["documents"][0][i],
+                        "recommendation": result_metadata.get("recommendation", ""),
+                        "similarity_score": 1 - results["distances"][0][i],
+                        "metadata": result_metadata,  # Include full metadata
+                    }
+                )
+        
         return matched_results
 
     def load_from_obsidian(self, vault_path):
